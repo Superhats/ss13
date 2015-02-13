@@ -1,44 +1,5 @@
-if true then
-    lovebird = require "../lib/lovebird"
-    lovebird.port = 8001
-    lovebird.update()
-end
-
 require "../shared/const"
-
-if false then
-    lovebird = require "../lib/lovebird"
-    lovebird.port = 8001
-    lovebird.update()
-end
-
-if USE_LOGFILE then
-    local logfile = assert(love.filesystem.newFile("out.log", "w"))
-    local logdirt = false
-    local logtime = 0
-
-    local print_func = print
-    function print(...)
-        print_func(...)
-        local args = {...}
-        for i, value in ipairs(args) do
-            args[i] = tostring(value)
-        end
-        logfile:write(table.concat(args, "    ") .. "\r\n")
-        logdirt = true
-    end
-
-    function logtick(dt)
-        if logdirt then
-            logtime = logtime + dt
-            if logtime >= 1 then
-                logtime = logtime - 1
-                logdirt = false
-                logfile:flush()
-            end
-        end
-    end
-end
+require "../shared/debug"
 
 require "enet"
 mp = require "../lib/msgpack"
@@ -48,6 +9,8 @@ require "../shared/entities"
 local world = require "../shared/world"
 
 function love.load()
+    debug_patch()
+
     QUIT_ON_DISCONNECT = arg[2] == "--quit-on-disconnect"
 
     host = enet.host_create(nil, 1, NET_CHANNEL_COUNT,
@@ -60,15 +23,9 @@ end
 
 function love.quit()
     server:disconnect_now(DISCONNECT.EXITING)
-
-    if USE_LOVEBIRD then lovebird.update() end
-    if USE_LOGFILE  then logtick(1)        end
 end
 
 function love.update(dt)
-    if USE_LOVEBIRD then lovebird.update() end
-    if USE_LOGFILE  then logtick(dt)       end
-
     local event = host:service()
 
     while event do

@@ -9,6 +9,9 @@ function entity:unpack(t)
     assert(t == nil, "invalid unpack")
 end
 
+function entity:update(dt)
+end
+
 function entity:draw()
 end
 

@@ -32,6 +32,9 @@ function world:unpack(t)
     self.data = t[3]
 end
 
+function world:update(dt)
+end
+
 function world:draw()
     for x=1, self.width do
         for y=1, self.height do

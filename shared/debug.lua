@@ -35,7 +35,7 @@ end
 function debug_patch()
     local quit = love.quit
     function love.quit()
-        quit()
+        if quit then quit() end
         if USE_LOVEBIRD then lovebird.update() end
         if USE_LOGFILE  then logtick(1)        end
     end
@@ -44,6 +44,6 @@ function debug_patch()
     function love.update(dt)
         if USE_LOVEBIRD then lovebird.update() end
         if USE_LOGFILE  then logtick(dt)       end
-        update(dt)
+        if update then update(dt) end
     end
 end

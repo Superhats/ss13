@@ -6,6 +6,7 @@ function client:new(server, peer, name)
     local new = setmetatable({}, self)
 
     new.server = server
+    new.address = tostring(peer)
     new.peer = peer
     new.name = name
 
@@ -25,9 +26,9 @@ function client:send(data, channel, mode)
 end
 
 function client:on_connect()
-    print(self.name .. " connected")
+    print(self.name .. " (" .. self.address .. ")" .. " connected")
 
-    -- Send world
+    self:send({e = EVENT.HELLO})
     self:send({e = EVENT.WORLD_REPLACE, data = self.server.world:pack()})
 
     -- Utterly decimate them with entities
@@ -45,7 +46,7 @@ function client:on_connect()
 end
 
 function client:on_disconnect()
-    print(self.name .. " disconnected")
+    print(self.name .. " (" .. self.address .. ")" .. " disconnected")
 
     self.player = self.server:remove_entity(self.player)
 

@@ -3,7 +3,8 @@ local game = {}
 
 require("states/game/input")(game)
 
-function game:enter(previous, host, peer)
+function game:enter(previous, address, host, peer)
+    self.address = address
     self.host = host
     self.peer = peer
     self.world = world_class:new()

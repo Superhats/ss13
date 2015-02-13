@@ -30,7 +30,7 @@ function connecting:update(dt)
             local data = mp.unpack(event.data)
 
             if data.e == EVENT.HELLO then
-                gamestate.switch(states.game, host, server)
+                gamestate.switch(states.game, address, host, server)
             else
                 server:disconnect_later(DISCONNECT.INVALID_PACKET)
                 failed = true

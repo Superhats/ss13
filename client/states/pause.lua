@@ -64,13 +64,16 @@ function pause:draw()
 
         love.graphics.print(entry.label, 64, 64 + i * 30)
     end
+
+    -- Draw stats in top right
     love.graphics.setFont(self.font_stats)
     love.graphics.setColor(255, 255, 255, 150)
 
     love.graphics.printf(
         "Game version: v" .. GAME_VERSION .. "\n" ..
-        "Protocol version: v" .. PROTOCOL_VERSION .. "\n" ..
-        "Ping: " .. self.previous.peer:round_trip_time() .. "ms",
+        "Frame time: " .. math.ceil(love.timer.getDelta() * 1000) .. "\n" ..
+        "Ping: " .. self.previous.peer:round_trip_time() .. "ms\n" ..
+        "Server: " .. self.previous.address,
         0, 8, love.graphics.getWidth() - 8, "right")
 end
 

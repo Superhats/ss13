@@ -10,7 +10,8 @@ gamestate = require "../shared/hump/gamestate"
 states = {
     menu = require "states/menu",
     connecting = require "states/connecting",
-    game = require "states/game"
+    game = require "states/game",
+    pause = require "states/pause"
 }
 
 function love.load()

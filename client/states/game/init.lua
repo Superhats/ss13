@@ -1,30 +1,31 @@
 local world_class = require "../shared/world"
-
 local game = {}
-local host, server, game_world, game_entities
 
-function game:enter(previous, _host, _server)
-    host, server = _host, _server
-    game_world = world_class:new()
-    game_entities = {}
+require("states/game/input")(game)
+
+function game:enter(previous, host, peer)
+    self.host = host
+    self.peer = peer
+    self.world = world_class:new()
+    self.entities = {}
 
     love.graphics.setColor(255, 255, 255, 255)
     love.graphics.setBackgroundColor(255, 255, 255, 255)
 end
 
 function game:leave()
-    host = nil
-    server = nil
-    game_world = nil
-    game_entities = nil
+    self.host = nil
+    self.peer = nil
+    self.world = nil
+    self.entities = nil
 end
 
 function game:disconnect()
-    server:disconnect_later(DISCONNECT.EXITING)
+    self.peer:disconnect_later(DISCONNECT.EXITING)
 end
 
 function game:update(dt)
-    local event = host:service()
+    local event = self.host:service()
 
     while event do
         if event.type == "receive" then
@@ -32,17 +33,17 @@ function game:update(dt)
             print("Got packet " .. tostring(EVENT(data.e)))
 
             if data.e == EVENT.WORLD_REPLACE then
-                game_world:unpack(data.data)
+                self.world:unpack(data.data)
             elseif data.e == EVENT.ENTITY_ADD then
                 local type = entity_from_id(data.t)
                 local ent = type:new()
-                game_entities[data.i] = ent
+                self.entities[data.i] = ent
                 ent.__id = data.i
                 ent:unpack(data.d)
             elseif data.e == EVENT.ENTITY_REMOVE then
-                game_entities[data.i] = nil
+                self.entities[data.i] = nil
             elseif data.e == EVENT.ENTITY_UPDATE then
-                game_entities[data.i]:unpack(data.d)
+                self.entities[data.i]:unpack(data.d)
             end
         elseif event.type == "disconnect" then
             local reason = DISCONNECT(event.data)
@@ -53,30 +54,20 @@ function game:update(dt)
             -- display a message box that leads to menu upon pressing enter?
         end
 
-        event = host:service()
+        event = self.host:service()
     end
 
-    game_world:update(dt)
+    self.world:update(dt)
 
-    for id, ent in pairs(game_entities) do
+    for id, ent in pairs(self.entities) do
         ent:update(dt)
     end
 end
 
-function game:mousepressed(x, y, button)
-    if button == "l" then
-        server:send(mp.pack({
-            e = EVENT.MOVE_TO,
-            x = math.floor(x / 32),
-            y = math.floor(y / 32)
-        }))
-    end
-end
-
 function game:draw()
-    game_world:draw()
+    self.world:draw()
 
-    for id, ent in pairs(game_entities) do
+    for id, ent in pairs(self.entities) do
         ent:draw()
     end
 end

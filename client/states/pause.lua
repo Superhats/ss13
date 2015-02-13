@@ -1,9 +1,15 @@
 local pause = {}
 
 local menu = {
-    {label = "Resume", func = function() gamestate.pop() end},
-    {label = "Disconnect from server", func = function() gamestate.switch(states.menu) end},
-    {label = "Exit game", func = function() love.event.quit() end}
+    {label = "Resume", func = function()
+        gamestate.pop()
+    end},
+    {label = "Disconnect from server", func = function(self)
+        self.previous:disconnect()
+    end},
+    {label = "Exit game", func = function(self)
+        self.previous:quit()
+    end}
 }
 
 function pause:init()
@@ -36,7 +42,7 @@ function pause:keyreleased(key, code)
     if key == "escape" then
         gamestate.pop()
     elseif key == "return" then
-        menu[self.index].func()
+        menu[self.index].func(self)
     end
 end
 
@@ -57,7 +63,7 @@ function pause:draw()
             love.graphics.rectangle("fill", 60, 60 + i * 30,
                 self.font_label:getWidth(entry.label) + 8,
                 self.font_label:getHeight(entry.label) + 8)
-            love.graphics.setColor(255, 255, 255, 255)
+            love.graphics.setColor(255, 255, 255)
         else
             love.graphics.setColor(255, 255, 255, 200)
         end

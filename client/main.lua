@@ -16,8 +16,28 @@ states = {
 
 function love.load()
     debug_patch()
-    QUIT_ON_DISCONNECT = arg[2] == "--quit-on-disconnect"
+    local expect
+
+    for i=2, #arg do
+        if expect ~= nil then
+            if expect == "--connect" then
+                CONNECT_TO = arg[i]
+            end
+            expect = nil
+        elseif arg[i] == "--connect" then
+            expect = "--connect"
+        else
+            print("Unknown command line argument " .. arg[i])
+            love.event.quit()
+            return
+        end
+    end
 
     gamestate.registerEvents()
-    gamestate.switch(states.menu)
+
+    if CONNECT_TO ~= nil then
+        gamestate.switch(states.connecting, CONNECT_TO)
+    else
+        gamestate.switch(states.menu)
+    end
 end

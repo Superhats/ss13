@@ -21,6 +21,18 @@ function game:leave()
     self.entities = nil
 end
 
+function game:quit()
+    self.peer:disconnect_later(DISCONNECT.EXITING)
+    local event = self.host:service()
+    while event do
+        if event.type == "disconnect" then
+            love.event.quit()
+            break
+        end
+        event = self.host:service()
+    end
+end
+
 function game:disconnect()
     self.peer:disconnect_later(DISCONNECT.EXITING)
 end
@@ -50,7 +62,12 @@ function game:update(dt)
             local reason = DISCONNECT(event.data)
             reason = reason and " (" .. reason .. ")" or ""
             print("Disconnected from server" .. reason)
-            if QUIT_ON_DISCONNECT then love.event.quit() end
+
+            if CONNECT_TO ~= nil then
+                love.event.quit()
+            else
+                gamestate.switch(states.menu)
+            end
             -- need to do something here
             -- display a message box that leads to menu upon pressing enter?
         end

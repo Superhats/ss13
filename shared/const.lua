@@ -1,7 +1,7 @@
 local enum = require "../lib/enum"
 
 USE_LOVEBIRD = true
-USE_LOGFILE = true
+USE_LOGFILE = false
 
 NET_CHANNEL_COUNT = 4
 

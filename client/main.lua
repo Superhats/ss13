@@ -33,6 +33,12 @@ function love.load()
         end
     end
 
+    if expect ~= nil then
+        print("Missing argument for " .. expect)
+        love.event.quit()
+        return
+    end
+
     gamestate.registerEvents()
 
     if CONNECT_TO ~= nil then

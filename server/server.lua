@@ -10,7 +10,7 @@ server.__index = server
 
 function server:new()
     local new = setmetatable({}, self)
-    local address = (config.public and "localhost" or "*") .. ":" .. config.port
+    local address = (config.public and "*" or "localhost") .. ":" .. config.port or DEFAULT_PORT
 
     new.host = enet.host_create(address, config.max_peers,
         4, config.max_down, config.max_up)

@@ -1,12 +1,11 @@
 local world = {}
 world.__index = world
 
-local tile_size = 32
-
 function world:new(server)
     local new = setmetatable({}, self)
 
     new.server = server
+    new.tile_size = 32
     new.width = 0
     new.height = 0
     new.data = {}
@@ -17,11 +16,11 @@ function world:new(server)
 
         local width, height = new.image:getDimensions()
 
-        for i=1, (width / tile_size) * (height / tile_size) do
-            local x = math.floor((i-1) % (width / tile_size)) * tile_size
-            local y = math.floor((i-1) / (width / tile_size)) * tile_size
+        for i=1, (width / new.tile_size) * (height / new.tile_size) do
+            local x = math.floor((i-1) % (width / new.tile_size)) * new.tile_size
+            local y = math.floor((i-1) / (width / new.tile_size)) * new.tile_size
             table.insert(new.quads, love.graphics.newQuad(
-                x, y, tile_size, tile_size, width, height))
+                x, y, new.tile_size, new.tile_size, width, height))
             print("world_tile", i, x, y)
         end
     else
@@ -72,6 +71,10 @@ function world:set(x, y, i)
     end
 end
 
+function world:is_solid(x, y)
+    return self:get(x, y) == nil
+end
+
 function world:update(dt)
 end
 
@@ -80,7 +83,9 @@ function world:draw()
 
     for x=0, self.width-1 do
         for y=0, self.height-1 do
-            love.graphics.draw(self.image, self.quads[self:get(x, y)], x*tile_size, y*tile_size)
+            love.graphics.draw(self.image,
+                self.quads[self:get(x, y)],
+                x*self.tile_size, y*self.tile_size)
         end
     end
 end

@@ -15,8 +15,8 @@ function game:enter(previous, address, host, peer)
     self.control = setmetatable({}, {__mode = "kv"})
     self.camera = camera.new()
 
-    love.graphics.setColor(255, 255, 255, 255)
-    love.graphics.setBackgroundColor(255, 255, 255, 255)
+    love.graphics.setColor(255, 255, 255)
+    love.graphics.setBackgroundColor(0, 0, 0)
 
     self:init_input()
 end
@@ -29,6 +29,8 @@ function game:leave()
 end
 
 function game:quit()
+    print("quit()")
+
     self.peer:disconnect_later(DISCONNECT.EXITING)
     local event = self.host:service()
 
@@ -43,7 +45,12 @@ function game:quit()
 end
 
 function game:disconnect()
+    print("disconnect()")
     self.peer:disconnect_later(DISCONNECT.EXITING)
+end
+
+function game:send(data, channel, mode)
+    self.peer:send(mp.pack(data), channel, mode)
 end
 
 function game:get_control()

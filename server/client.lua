@@ -33,27 +33,27 @@ end
 function client:set_control(ent)
     assert(ent.__id ~= nil, "ent has no id")
     self.control.ent = ent
-    self:send({e = EVENT.CONTROL_ENTITY, i = ent.__id})
+    self:send{e = EVENT.CONTROL_ENTITY, i = ent.__id}
 end
 
 function client:on_connect()
     print(self.name .. " (" .. self.address .. ")" .. " connected")
 
-    self:send({e = EVENT.HELLO})
-    self:send({e = EVENT.WORLD_REPLACE, data = self.server.world:pack()})
+    self:send{e = EVENT.HELLO}
+    self:send{e = EVENT.WORLD_REPLACE, data = self.server.world:pack()}
 
     -- Utterly decimate them with entities
     for i, ent in pairs(self.server.entities) do
-        self:send({
+        self:send{
             e = EVENT.ENTITY_ADD,
             i = i,
             t = ent:get_type_id(),
             d = ent:pack()
-        })
+        }
     end
 
     -- Try something
-    self.player = self.server:add_entity(entities.player:new())
+    self.player = self.server:add_entity(entities.player:new(self.server))
     self:set_control(self.player)
 end
 
@@ -74,8 +74,9 @@ function client:on_receive(data)
 
     if data.e == EVENT.MOVE_TO then
         local control = self:get_control()
-        control.x = data.x * 32 + 16
-        control.y = data.y * 32 + 16
+        control:move(data.x, data.y)
+        -- control.x = data.x * 32 + 16
+        -- control.y = data.y * 32 + 16
         self.server:update_entity(control)
     end
 end

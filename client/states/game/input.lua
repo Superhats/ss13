@@ -19,6 +19,17 @@ return function (game)
 
     local move_rate = 0.175
 
+    function game:mousepressed(x, y, button)
+        x, y = self.camera:worldCoords(x, y)
+
+        self.peer:send(mp.pack({
+            e = EVENT.INTERACT_XY,
+            x = math.floor(x / 32),
+            y = math.floor(y / 32),
+            b = button
+        }))
+    end
+
     function game:keypressed(key, code)
         if keymap[key] ~= nil then
             self:keyreleased(key, code)
@@ -41,20 +52,6 @@ return function (game)
 
     local t = 0
 
-    function game:mousepressed(x, y, button)
-        x, y = self.camera:worldCoords(x, y)
-
-        if button == "l" and t == 0 then
-            self.peer:send(mp.pack({
-                e = EVENT.MOVE_TO,
-                x = math.floor(x / 32),
-                y = math.floor(y / 32)
-            }))
-
-            t = love.timer.getDelta()
-        end
-    end
-
     function game:init_input()
         self.input_stack = {}
         t = 0
@@ -65,21 +62,33 @@ return function (game)
             return
         end
 
-        if t == 0 then
-            if #self.input_stack > 0 then
-                delta = deltas[self.input_stack[#self.input_stack]]
-
-                self.peer:send(mp.pack({
-                    e = EVENT.MOVE_TO,
-                    x = math.floor(self.entities[0].x / 32 + delta[1]),
-                    y = math.floor(self.entities[0].y / 32 + delta[2])
-                }))
-                t = dt
-            end
-        elseif t < move_rate then
-            t = t + dt
-        else
-            t = 0
+        if #self.input_stack > 0 then
+            local control = self:get_control()
+            local delta = deltas[self.input_stack[#self.input_stack]]
+            control:move(unpack(delta))
         end
+
+        -- if t == 0 then
+        --     if #self.input_stack > 0 then
+        --         local delta = deltas[self.input_stack[#self.input_stack]]
+        --         local control = self:get_control()
+        --
+        --         local x = math.floor(control.x / 32 + delta[1])
+        --         local y = math.floor(control.y / 32 + delta[2])
+        --
+        --         if not self.world:is_solid(x, y) then
+        --             self.peer:send(mp.pack({
+        --                 e = EVENT.MOVE_TO,
+        --                 x = x,
+        --                 y = y
+        --             }))
+        --             t = dt
+        --         end
+        --     end
+        -- elseif t < move_rate then
+        --     t = t + dt
+        -- else
+        --     t = 0
+        -- end
     end
 end

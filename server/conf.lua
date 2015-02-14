@@ -10,7 +10,7 @@ config = {
 }
 
 function love.conf(t)
-    t.identity = nil
+    t.identity = "ss13-server"
     t.version = "0.9.1"
     t.console = enable_console
 

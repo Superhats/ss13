@@ -16,7 +16,7 @@ return function(game)
                     self.world:set(data.x, data.y, data.i)
                 elseif data.e == EVENT.ENTITY_ADD then
                     local type = entity_from_id(data.t)
-                    local ent = type:new()
+                    local ent = type:new(self)
                     self.entities[data.i] = ent
                     ent.__id = data.i
                     ent:unpack(data.d)

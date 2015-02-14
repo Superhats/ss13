@@ -3,6 +3,11 @@ local address, host, server, error, failed
 
 function connecting:enter(from, _address)
     address = _address
+
+    if string.find(address, ":") == nil then
+        address = address .. ":" .. DEFAULT_PORT
+    end
+
     print("Connecting to " .. address)
 
     host = enet.host_create(nil, 1, NET_CHANNEL_COUNT, config.max_down, config.max_up)
@@ -65,7 +70,7 @@ function connecting:draw()
         love.graphics.printf("Error:\n" .. error, 0, sh / 4, sw, "center")
     else
         love.graphics.setColor(127, 127, 127, 255)
-        love.graphics.printf("Connecting to server", 0, sh / 4, sw, "center")
+        love.graphics.printf("Connecting to " .. address, 0, sh / 4, sw, "center")
     end
 end
 

@@ -8,5 +8,6 @@ config = {
 }
 
 function love.conf(t)
+    t.identity = "ss13-client"
     t.console = true
 end

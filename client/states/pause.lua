@@ -12,10 +12,10 @@ function pause:init()
             gamestate.pop()
         end},
         {label = "Disconnect from server", func = function()
-            pause.previous:disconnect()
+            self.previous:disconnect()
         end, disabled = CONNECT_TO ~= nil},
         {label = "Exit game", func = function()
-            pause.previous:quit()
+            self.previous:quit()
         end}
     }, 4, 40)
 end

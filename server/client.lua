@@ -9,6 +9,7 @@ function client:new(server, peer, name)
     new.address = tostring(peer)
     new.peer = peer
     new.name = name
+    new.control = setmetatable({}, {__mode = "kv"})
 
     return new
 end
@@ -23,6 +24,16 @@ end
 
 function client:send(data, channel, mode)
     self.peer:send(mp.pack(data), channel, mode)
+end
+
+function client:get_control()
+    return self.control.net
+end
+
+function client:set_control(ent)
+    assert(ent.__id ~= nil, "ent has no id")
+    self.control.ent = ent
+    self:send({e = EVENT.CONTROL_ENTITY, i = ent.__id})
 end
 
 function client:on_connect()
@@ -43,6 +54,7 @@ function client:on_connect()
 
     -- Try something
     self.player = self.server:add_entity(entities.player:new())
+    self:set_control(self.player)
 end
 
 function client:on_disconnect()
@@ -56,7 +68,9 @@ function client:on_disconnect()
 end
 
 function client:on_receive(data)
-    print(self.name .. " sent " .. tostring(EVENT(data.e)))
+    if TRACE_NET then
+        print(self.name .. " sent " .. tostring(EVENT(data.e)))
+    end
 
     if data.e == EVENT.MOVE_TO then
         self.player.x = data.x * 32 + 16

@@ -90,6 +90,12 @@ end
 function server:update(dt)
     self.time = self.time + dt
     self:update_net()
+
+    self.world:update(dt)
+
+    for id, ent in pairs(self.entities) do
+        ent:update(dt)
+    end
 end
 
 function server:update_net()

@@ -30,6 +30,12 @@ function player:unpack(t)
     self.y = t[2]
 end
 
+function player:update_camera(camera)
+    camera:lookAt(self.x + 16, self.y + 16)
+    camera:zoomTo(1)
+    camera:rotateTo(0)
+end
+
 function player:draw()
     love.graphics.setColor(255, 255, 255)
     love.graphics.draw(player_image, player_quads.forward, self.x, self.y,

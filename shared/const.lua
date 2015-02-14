@@ -2,6 +2,7 @@ local enum = require "../lib/enum"
 
 USE_LOVEBIRD = true
 USE_LOGFILE = false
+TRACE_NET = false
 
 NET_CHANNEL_COUNT = 4
 
@@ -22,5 +23,6 @@ EVENT = enum {
     "ENTITY_ADD",
     "ENTITY_REMOVE",
     "ENTITY_UPDATE",
+    "CONTROL_ENTITY",
     "MOVE_TO"
 }

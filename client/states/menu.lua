@@ -56,10 +56,4 @@ function menu:draw()
     -- love.graphics.print(text, x, y)
 end
 
--- function menu:keyreleased(key, code)
---     if key == "return" then
---         gamestate.switch(states.connecting, address)
---     end
--- end
-
 return menu

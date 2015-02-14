@@ -20,6 +20,7 @@ DISCONNECT = enum {
 EVENT = enum {
     "HELLO",
     "WORLD_REPLACE",
+    "WORLD_UPDATE",
     "ENTITY_ADD",
     "ENTITY_REMOVE",
     "ENTITY_UPDATE",

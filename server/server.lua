@@ -21,7 +21,7 @@ function server:new()
         error("Cannot bind to " .. address)
     end
 
-    new.world = world:new()
+    new.world = world:new(new)
     new.time = 0
 
     new.clients  = {}
@@ -47,20 +47,26 @@ function server:close(from_quit)
     end
 end
 
+function server:send(data, channel, mode)
+    data = mp.pack(data)
+
+    for i, cl in ipairs(self.clients) do
+        cl.peer:send(data, channel, mode)
+    end
+end
+
 function server:add_entity(ent)
     ent.__id = self.next_id
 
     self.entities[self.next_id] = ent
     self.next_id = self.next_id + 1
 
-    for i, cl in ipairs(self.clients) do
-        cl:send({
-            e = EVENT.ENTITY_ADD,
-            i = ent.__id,
-            t = ent:get_type_id(),
-            d = ent:pack()
-        })
-    end
+    self:send({
+        e = EVENT.ENTITY_ADD,
+        i = ent.__id,
+        t = ent:get_type_id(),
+        d = ent:pack()
+    })
 
     return ent
 end
@@ -68,23 +74,19 @@ end
 function server:remove_entity(ent)
     assert(ent.__id ~= nil, "entity has no id")
 
-    for i, cl in ipairs(self.clients) do
-        cl:send({e = EVENT.ENTITY_REMOVE, i = ent.__id})
-    end
-
+    self:send({e = EVENT.ENTITY_REMOVE, i = ent.__id})
     self.entities[ent.__id] = nil
+
     ent.__id = nil
     return nil
 end
 
 function server:update_entity(ent)
-    for i, cl in ipairs(self.clients) do
-        cl:send({
-            e = EVENT.ENTITY_UPDATE,
-            i = ent.__id,
-            d = ent:pack()
-        })
-    end
+    self:send({
+        e = EVENT.ENTITY_UPDATE,
+        i = ent.__id,
+        d = ent:pack()
+    })
 end
 
 function server:update(dt)

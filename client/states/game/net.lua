@@ -12,6 +12,8 @@ return function(game)
 
                 if data.e == EVENT.WORLD_REPLACE then
                     self.world:unpack(data.data)
+                elseif data.e == EVENT.WORLD_UPDATE then
+                    self.world:set(data.x, data.y, data.i)
                 elseif data.e == EVENT.ENTITY_ADD then
                     local type = entity_from_id(data.t)
                     local ent = type:new()

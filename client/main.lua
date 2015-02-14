@@ -15,6 +15,11 @@ states = {
 }
 
 function love.load()
+    local sound = love.audio.newSource("assets/port.mp3")
+    --love.audio.play(sound)
+    sound:setVolume(0.5)
+    sound:play()
+
     debug_patch()
     local expect
 

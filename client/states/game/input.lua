@@ -39,19 +39,21 @@ return function (game)
         end
     end
 
+    local t = 0
+
     function game:mousepressed(x, y, button)
         x, y = self.camera:worldCoords(x, y)
 
-        if button == "l" then
+        if button == "l" and t == 0 then
             self.peer:send(mp.pack({
                 e = EVENT.MOVE_TO,
                 x = math.floor(x / 32),
                 y = math.floor(y / 32)
             }))
+
+            t = love.timer.getDelta()
         end
     end
-
-    local t = 0
 
     function game:init_input()
         self.input_stack = {}

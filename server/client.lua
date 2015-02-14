@@ -27,7 +27,7 @@ function client:send(data, channel, mode)
 end
 
 function client:get_control()
-    return self.control.net
+    return self.control.ent
 end
 
 function client:set_control(ent)
@@ -73,9 +73,10 @@ function client:on_receive(data)
     end
 
     if data.e == EVENT.MOVE_TO then
-        self.player.x = data.x * 32 + 16
-        self.player.y = data.y * 32 + 16
-        self.server:update_entity(self.player)
+        local control = self:get_control()
+        control.x = data.x * 32 + 16
+        control.y = data.y * 32 + 16
+        self.server:update_entity(control)
     end
 end
 

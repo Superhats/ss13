@@ -16,8 +16,8 @@ function player:new()
     end
 
     new = setmetatable({}, self)
-    new.x = 32.0
-    new.y = 32.0
+    new.x = 16.0
+    new.y = 16.0
     return new
 end
 

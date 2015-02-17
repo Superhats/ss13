@@ -1,0 +1,5 @@
+{
+    "cmd": "./test.sh",
+    "sh": false,
+    "cwd": "{PROJECT_PATH}"
+}

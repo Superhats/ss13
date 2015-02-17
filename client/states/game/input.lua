@@ -57,38 +57,15 @@ return function (game)
         t = 0
     end
 
-    function game:update_input(dt)
+    function game:get_input_state()
         if gamestate.current() ~= self then
             return
         end
 
         if #self.input_stack > 0 then
-            local control = self:get_control()
-            local delta = deltas[self.input_stack[#self.input_stack]]
-            control:move(unpack(delta))
+            return deltas[self.input_stack[#self.input_stack]]
         end
 
-        -- if t == 0 then
-        --     if #self.input_stack > 0 then
-        --         local delta = deltas[self.input_stack[#self.input_stack]]
-        --         local control = self:get_control()
-        --
-        --         local x = math.floor(control.x / 32 + delta[1])
-        --         local y = math.floor(control.y / 32 + delta[2])
-        --
-        --         if not self.world:is_solid(x, y) then
-        --             self.peer:send(mp.pack({
-        --                 e = EVENT.MOVE_TO,
-        --                 x = x,
-        --                 y = y
-        --             }))
-        --             t = dt
-        --         end
-        --     end
-        -- elseif t < move_rate then
-        --     t = t + dt
-        -- else
-        --     t = 0
-        -- end
+        return {0, 0}
     end
 end

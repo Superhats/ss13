@@ -2,14 +2,17 @@
 local client = {}
 client.__index = client
 
-function client:new(server, peer, name)
+function client:new(game, peer, name)
     local new = setmetatable({}, self)
 
-    new.server = server
+    new.game = game
     new.address = tostring(peer)
     new.peer = peer
     new.name = name
-    new.control = setmetatable({}, {__mode = "kv"})
+    new.__control = setmetatable({}, {__mode = "kv"})
+
+    new.sequence_client = -1
+    new.sequence_server = -1
 
     return new
 end
@@ -27,12 +30,15 @@ function client:send(data, channel, mode)
 end
 
 function client:get_control()
-    return self.control.ent
+    return self.__control.ent
 end
 
 function client:set_control(ent)
     assert(ent.__id ~= nil, "ent has no id")
-    self.control.ent = ent
+
+    ent.__control.client = self
+    self.__control.ent = ent
+
     self:send{e = EVENT.CONTROL_ENTITY, i = ent.__id}
 end
 
@@ -40,10 +46,10 @@ function client:on_connect()
     print(self.name .. " (" .. self.address .. ")" .. " connected")
 
     self:send{e = EVENT.HELLO}
-    self:send{e = EVENT.WORLD_REPLACE, data = self.server.world:pack()}
+    self:send{e = EVENT.WORLD_REPLACE, data = self.game.world:pack()}
 
     -- Utterly decimate them with entities
-    for i, ent in pairs(self.server.entities) do
+    for i, ent in pairs(self.game.entities) do
         self:send{
             e = EVENT.ENTITY_ADD,
             i = i,
@@ -53,14 +59,16 @@ function client:on_connect()
     end
 
     -- Try something
-    self.player = self.server:add_entity(entities.player:new(self.server))
+    self.player = entities.player:new(self.game)
+    self.player.x = 16
+    self.player.y = 16
     self:set_control(self.player)
 end
 
 function client:on_disconnect()
     print(self.name .. " (" .. self.address .. ")" .. " disconnected")
 
-    self.player = self.server:remove_entity(self.player)
+    self.player = self.game:remove_entity(self.player)
 
     if QUIT_ON_DISCONNECT then
         love.event.quit()
@@ -72,12 +80,9 @@ function client:on_receive(data)
         print(self.name .. " sent " .. tostring(EVENT(data.e)))
     end
 
-    if data.e == EVENT.MOVE_TO then
-        local control = self:get_control()
-        control:move(data.x, data.y)
-        -- control.x = data.x * 32 + 16
-        -- control.y = data.y * 32 + 16
-        self.server:update_entity(control)
+    if data.e == EVENT.UPDATE_FRAME then
+        self.sequence_client = data.s
+        self.last_input_state = data.i
     end
 end
 

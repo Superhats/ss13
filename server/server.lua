@@ -5,7 +5,7 @@ local MAX_PEERS = 64
 local MAX_DOWN = 0
 local MAX_UP = 0
 
-local server = {}
+local server = {is_client = false}
 server.__index = server
 
 function server:new()
@@ -65,7 +65,7 @@ function server:add_entity(ent)
         e = EVENT.ENTITY_ADD,
         i = ent.__id,
         t = ent:get_type_id(),
-        d = ent:pack()
+        d = ent:pack(true)
     })
 
     return ent
@@ -90,6 +90,23 @@ function server:update_entity(ent)
 end
 
 function server:update(dt)
+    -- dish out a UPDATE_FRAME each frame to each client
+    for i, cl in ipairs(self.clients) do
+        cl.sequence_server = cl.sequence_server + 1
+
+        local data = {
+            e = EVENT.UPDATE_FRAME,
+            s = cl.sequence_server,
+            a = cl.sequence_client
+        }
+
+        for id, ent in pairs(self.entities) do
+            data[id] = ent:pack()
+        end
+
+        cl:send(data, 0, "unreliable")
+    end
+
     self.time = self.time + dt
     self:update_net()
 

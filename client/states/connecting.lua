@@ -12,6 +12,7 @@ function connecting:enter(from, _address)
 
     host = enet.host_create(nil, 1, NET_CHANNEL_COUNT, config.max_down, config.max_up)
     server = host:connect(address)
+    -- server:ping_interval(200)
 
     error = nil
     failed = false

@@ -1,5 +1,5 @@
 local world_class = require "../shared/world"
-local game = {}
+local game = {is_client = true}
 
 require("states/game/net")(game)
 require("states/game/input")(game)
@@ -15,6 +15,10 @@ function game:enter(previous, address, host, peer)
     self.control = setmetatable({}, {__mode = "kv"})
     self.camera = camera.new()
 
+    self.sequence_client = -1
+    self.sequence_client_ack = -1
+    self.sequence_server = -1
+
     love.graphics.setColor(255, 255, 255)
     love.graphics.setBackgroundColor(0, 0, 0)
 
@@ -29,8 +33,6 @@ function game:leave()
 end
 
 function game:quit()
-    print("quit()")
-
     self.peer:disconnect_later(DISCONNECT.EXITING)
     local event = self.host:service()
 
@@ -45,12 +47,7 @@ function game:quit()
 end
 
 function game:disconnect()
-    print("disconnect()")
     self.peer:disconnect_later(DISCONNECT.EXITING)
-end
-
-function game:send(data, channel, mode)
-    self.peer:send(mp.pack(data), channel, mode)
 end
 
 function game:get_control()
@@ -75,6 +72,14 @@ function game:update(dt)
 end
 
 function game:draw()
+    love.graphics.setColor(255, 255, 255)
+    love.graphics.printf(
+        "sequence_server = " .. self.sequence_server .. "\n" ..
+        "sequence_client = " .. self.sequence_client .. "\n" ..
+        "sequence_client_ack = " .. self.sequence_client_ack .. "\n" ..
+        "ack_delta = " .. self.sequence_client - self.sequence_client_ack,
+        8, 8, love.graphics.getWidth() - 16)
+
     self.camera:attach()
     self.world:draw()
 

@@ -22,6 +22,7 @@ function client:new(game, peer, name)
         name = name .. i
     end
 
+    new.weak = setmetatable({}, {__mode = "kv"})
     new.game = game
     new.address = tostring(peer)
     new.peer = peer
@@ -47,16 +48,23 @@ function client:send(data, channel, mode)
 end
 
 function client:get_control()
-    return self.game.entities[self.control_id]
+    return self.weak.control
 end
 
 function client:set_control(ent)
-    assert(ent.__id ~= nil, "ent has no id")
+    if self.weak.control then
+        self.weak.control.weak.controller = nil
+        self.weak.control = nil
+    end
 
-    self.control_id = ent.__id
-    ent.__control.client = self
+    if ent then
+        assert(ent.__id, "ent has no id")
 
-    self:send{e = EVENT.CONTROL_ENTITY, i = ent.__id}
+        self.weak.control = ent
+        ent.weak.controller = self
+
+        self:send{e = EVENT.CONTROL_ENTITY, i = ent.__id}
+    end
 end
 
 function client:on_connect()
@@ -65,38 +73,33 @@ function client:on_connect()
     self:send{e = EVENT.HELLO}
     self:send{e = EVENT.WORLD_REPLACE, data = self.game.world:pack()}
 
-    -- Utterly decimate them with entities
+    -- Send down all existing entities
     local data = {e = EVENT.ENTITY_ADD}
+    local send
 
     for id, ent in pairs(self.game.entities) do
-        data[id] = {ent:get_type_id(), ent:pack(true)}
+        data[id] = {ent:get_type_id(), ent:pack(PACK_TYPE.INITIAL)}
+        send = true
     end
 
-    self:send(data)
+    if send then
+        self:send(data)
+    end
 
-    -- for i, ent in pairs(self.game.entities) do
-    --     self:send{
-    --         e = EVENT.ENTITY_ADD,
-    --         i = i,
-    --         t = ent:get_type_id(),
-    --         d = ent:pack()
-    --     }
-    -- end
-
-    -- Try something
+    -- Give them a player
     self.player = entities.player:new(self.game)
-    self.player.x = 16
-    self.player.y = 16
+    self.player.pos = {16, 16}
     self:set_control(self.player)
 end
 
 function client:on_disconnect()
     print(self.name .. " (" .. self.address .. ")" .. " disconnected")
 
-    self.player = self.game:remove_entity(self.player)
+    self.player:remove()
+    self.player = nil
 
     if QUIT_ON_DISCONNECT then
-        love.event.quit()
+        -- love.event.quit()
     end
 end
 
@@ -106,7 +109,9 @@ function client:on_receive(data)
     end
 
     if data.e == EVENT.UPDATE_FRAME then
-        self.last_input_state = data.i
+        if self.weak.control then
+            self.weak.control.input_state = data.i
+        end
     end
 end
 

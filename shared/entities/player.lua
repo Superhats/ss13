@@ -11,41 +11,37 @@ function player:__init()
         }
     end
 
-    self.x = 0
-    self.y = 0
-
-    return self
+    self.pos = {0, 0}
 end
 
 function player:pack()
-    return {self.x, self.y}
+    return self.pos
 end
 
 function player:unpack(t)
-    self.x = t[1]
-    self.y = t[2]
+    self.pos = t
 end
 
 function player:update_camera(camera)
-    camera:lookAt(math.floor(self.x + 0.5), math.floor(self.y + 0.5))
+    camera:lookAt(
+        math.floor(self.pos[1] + 0.5),
+        math.floor(self.pos[2] + 0.5))
     camera:zoomTo(1)
     camera:rotateTo(0)
 end
 
 function player:update(dt)
     if not self.is_ghost then
-        local input = self:get_input()
-
-        if input ~= nil then
-            self.x = self.x + input[1] * 32 * dt
-            self.y = self.y + input[2] * 32 * dt
+        if self.input_state then
+            self.pos[1] = self.pos[1] + self.input_state[1] * 32 * dt
+            self.pos[2] = self.pos[2] + self.input_state[2] * 32 * dt
         end
     end
 end
 
 function player:draw()
-    local x = math.floor(self.x + 0.5)
-    local y = math.floor(self.y + 0.5)
+    local x = math.floor(self.pos[1] + 0.5)
+    local y = math.floor(self.pos[2] + 0.5)
 
     love.graphics.setColor(255, 255, 255)
     love.graphics.draw(player_image, player_quads.forward, x, y,

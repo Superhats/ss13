@@ -11,4 +11,7 @@ function class:extend(t)
     return new
 end
 
+function class:__init()
+end
+
 return class

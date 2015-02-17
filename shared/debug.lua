@@ -1,5 +1,14 @@
 if USE_LOVEBIRD then
     lovebird = require "../lib/lovebird"
+    -- local port
+    -- if is_client then
+    --     math.randomseed(os.clock())
+    --     port = math.random(8001, 9000)
+    -- else
+    --     port = config.port
+    -- end
+    -- lovebird.port = port
+    -- print("lovebird port = " .. port)
     lovebird.port = is_client and 8001 or 8000
     lovebird.update()
 end

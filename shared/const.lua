@@ -29,3 +29,8 @@ EVENT = enum {
     "CONTROL_ENTITY",
     "MOVE_TO"
 }
+
+PACK_TYPE = enum {
+    "INITIAL",
+    "UPDATE_FRAME"
+}

@@ -66,7 +66,7 @@ function server:add_entity(ent)
 
     self:send{
         e = EVENT.ENTITY_ADD,
-        [ent.__id] = {ent:get_type_id(), ent:pack(true)}
+        [ent.__id] = {ent:get_type_id(), ent:pack(PACK_TYPE.INITIAL)}
     }
 
     return ent
@@ -85,18 +85,20 @@ end
 
 function server:update(dt)
     -- dish out a UPDATE_FRAME each frame to each client
-    for i, cl in ipairs(self.clients) do
+    for i, cl in pairs(self.clients) do
         local data = {e = EVENT.UPDATE_FRAME}
 
         for id, ent in pairs(self.entities) do
-            data[id] = ent:pack()
+            local t = ent:pack(PACK_TYPE.UPDATE_FRAME)
+            if t ~= nil then
+                data[id] = t
+            end
         end
 
         cl:send(data, 0, "unreliable")
     end
 
     self:update_net()
-
     self.world:update(dt)
 
     for id, ent in pairs(self.entities) do

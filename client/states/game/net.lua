@@ -30,12 +30,10 @@ return function(game)
                     self.world:unpack(data.data)
                 elseif event == EVENT.UPDATE_FRAME then
                     for id, t in pairs(data) do
-                        if self.entities[id] == nil then
-                            if TRACE_NET then
-                                error("got update for unknown ghost " .. id)
-                            end
-                        else
+                        if self.entities[id] then
                             self.entities[id]:unpack(t)
+                        elseif TRACE_NET then
+                            error("got update for unknown ghost " .. id)
                         end
                     end
                 elseif event == EVENT.WORLD_UPDATE then
@@ -47,8 +45,12 @@ return function(game)
                         ent:unpack(entry[2], true)
                     end
                 elseif event == EVENT.ENTITY_REMOVE then
-                    for i, id in data do
-                        self.entities[id] = nil
+                    for i, id in ipairs(data) do
+                        if self.entities[id] then
+                            self.entities[id]:remove()
+                        elseif TRACE_NET then
+                            error("got remove for unknown ghost " .. id)
+                        end
                     end
                 elseif event == EVENT.CONTROL_ENTITY then
                     self.control_id = data.i
@@ -67,6 +69,8 @@ return function(game)
                 end
                 -- need to do something here
                 -- display a message box that leads to menu upon pressing enter?
+
+                return
             end
 
             event = self.host:service()

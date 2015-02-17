@@ -5,7 +5,7 @@ require "../shared/const"
 require "../shared/debug"
 require "../shared/entities"
 
-gamestate = require "../shared/hump/gamestate"
+gamestate = require "../lib/hump/gamestate"
 
 states = {
     menu = require "states/menu",
@@ -15,10 +15,9 @@ states = {
 }
 
 function love.load()
-    local sound = love.audio.newSource("assets/port.mp3")
-    --love.audio.play(sound)
-    sound:setVolume(0.5)
-    sound:play()
+    -- local sound = love.audio.newSource("assets/port.mp3")
+    -- sound:setVolume(0.5)
+    -- sound:play()
 
     debug_patch()
     local expect

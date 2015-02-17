@@ -5,7 +5,7 @@ local MAX_PEERS = 64
 local MAX_DOWN = 0
 local MAX_UP = 0
 
-local server = {is_client = false}
+local server = {}
 server.__index = server
 
 function server:new()
@@ -22,7 +22,6 @@ function server:new()
     end
 
     new.world = world:new(new)
-    new.time = 0
 
     new.clients  = {}
     new.entities = {}
@@ -48,6 +47,10 @@ function server:close(from_quit)
 end
 
 function server:send(data, channel, mode)
+    if TRACE_NET then
+        print("-> all: " .. tostring(EVENT(data.e)))
+    end
+
     data = mp.pack(data)
 
     for i, cl in ipairs(self.clients) do
@@ -61,12 +64,10 @@ function server:add_entity(ent)
     self.entities[self.next_id] = ent
     self.next_id = self.next_id + 1
 
-    self:send({
+    self:send{
         e = EVENT.ENTITY_ADD,
-        i = ent.__id,
-        t = ent:get_type_id(),
-        d = ent:pack(true)
-    })
+        [ent.__id] = {ent:get_type_id(), ent:pack(true)}
+    }
 
     return ent
 end
@@ -74,31 +75,18 @@ end
 function server:remove_entity(ent)
     assert(ent.__id ~= nil, "entity has no id")
 
-    self:send({e = EVENT.ENTITY_REMOVE, i = ent.__id})
+    -- self:send({e = EVENT.ENTITY_REMOVE, i = ent.__id})
+    self:send({e = EVENT.ENTITY_REMOVE, ent.__id})
     self.entities[ent.__id] = nil
 
     ent.__id = nil
     return nil
 end
 
-function server:update_entity(ent)
-    self:send({
-        e = EVENT.ENTITY_UPDATE,
-        i = ent.__id,
-        d = ent:pack()
-    })
-end
-
 function server:update(dt)
     -- dish out a UPDATE_FRAME each frame to each client
     for i, cl in ipairs(self.clients) do
-        cl.sequence_server = cl.sequence_server + 1
-
-        local data = {
-            e = EVENT.UPDATE_FRAME,
-            s = cl.sequence_server,
-            a = cl.sequence_client
-        }
+        local data = {e = EVENT.UPDATE_FRAME}
 
         for id, ent in pairs(self.entities) do
             data[id] = ent:pack()
@@ -107,7 +95,6 @@ function server:update(dt)
         cl:send(data, 0, "unreliable")
     end
 
-    self.time = self.time + dt
     self:update_net()
 
     self.world:update(dt)

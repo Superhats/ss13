@@ -1,5 +1,6 @@
 local connecting = {}
-local address, host, server, error, failed
+local address, host, peer, failed
+local state, color
 
 function connecting:enter(from, _address)
     address = _address
@@ -11,21 +12,33 @@ function connecting:enter(from, _address)
     print("Connecting to " .. address)
 
     host = enet.host_create(nil, 1, NET_CHANNEL_COUNT, config.max_down, config.max_up)
-    server = host:connect(address)
-    -- server:ping_interval(200)
+    peer = host:connect(address)
+    -- peer:ping_interval(200)
 
-    error = nil
     failed = false
+
+    state = "Connecting to " .. address
+    color = {127, 127, 127}
 end
 
 function connecting:leave()
     address = nil
     host = nil
-    server = nil
+    peer = nil
+end
+
+function connecting:fail(error)
+    if failed then
+        return
+    end
+
+    failed = true
+    state = "Error:\n" .. error
+    color = {127, 95, 31}
 end
 
 function connecting:update(dt)
-    if failed or error ~= nil then
+    if failed then
         return
     end
 
@@ -36,17 +49,17 @@ function connecting:update(dt)
             local data = mp.unpack(event.data)
 
             if data.e == EVENT.HELLO then
-                gamestate.switch(states.game, address, host, server)
+                gamestate.switch(states.game, address, host, peer)
             else
-                server:disconnect_later(DISCONNECT.INVALID_PACKET)
-                failed = true
+                peer:disconnect_later(DISCONNECT.INVALID_PACKET)
             end
 
             break
         elseif event.type == "connect" then
             print("Connected to server")
+            state = "Saying hello..."
 
-            server:send(mp.pack({
+            peer:send(mp.pack({
                 name = config.name,
                 version = PROTOCOL_VERSION
             }))
@@ -55,7 +68,7 @@ function connecting:update(dt)
             reason = reason and " (" .. reason .. ")" or ""
             print("Disconnected from server" .. reason)
             if QUIT_ON_DISCONNECT then love.event.quit() end
-            error = "Failed to connect to server" .. reason
+            self:fail("Failed to connect to server" .. reason)
             break
         end
 
@@ -66,13 +79,8 @@ end
 function connecting:draw()
     local sw, sh = love.graphics.getDimensions()
 
-    if error ~= nil then
-        love.graphics.setColor(127, 31, 0, 255)
-        love.graphics.printf("Error:\n" .. error, 0, sh / 4, sw, "center")
-    else
-        love.graphics.setColor(127, 127, 127, 255)
-        love.graphics.printf("Connecting to " .. address, 0, sh / 4, sw, "center")
-    end
+    love.graphics.setColor(color)
+    love.graphics.printf(state, 0, sh / 4, sw, "center")
 end
 
 return connecting
